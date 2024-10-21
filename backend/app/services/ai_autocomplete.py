@@ -1,9 +1,9 @@
 import tiktoken
-import openai
+from openai import OpenAI
 from app.services.ai_edit import remove_newlines_and_spaces
 from app.config.config_files import APIkeys
 
-openai.api_key = APIkeys.openaiAPI
+client = OpenAI(api_key=APIkeys.openaiAPI)
 
 
 def num_tokens_from_string(string: str, model_name: str) -> int:
@@ -88,29 +88,25 @@ def openai_completion(
     if model_name == "text-davinci-002":
         suffix = result["suffix"].lstrip() if len(result["suffix"]) > 0 else None
 
-        res = openai.Completion.create(
-            model=model_name,
-            prompt=prompt,
-            suffix=suffix,
-            max_tokens=max_tokens,
-            temperature=0.2,
-            stop=["\n"],
-            echo=False,
-        )
+        res = client.completions.create(model=model_name,
+        prompt=prompt,
+        suffix=suffix,
+        max_tokens=max_tokens,
+        temperature=0.2,
+        stop=["\n"],
+        echo=False)
     else:
         suffix = result["suffix"].lstrip() if len(result["suffix"]) > 0 else ""
         input_text = suffix + prompt
 
-        res = openai.Completion.create(
-            model=model_name,
-            prompt=input_text,
-            max_tokens=max_tokens,
-            temperature=0.2,
-            stop=["\n"],
-            echo=False,
-        )
+        res = client.completions.create(model=model_name,
+        prompt=input_text,
+        max_tokens=max_tokens,
+        temperature=0.2,
+        stop=["\n"],
+        echo=False)
 
-    res_text = res["choices"][0]["text"]
+    res_text = res.choices[0].text
 
     # post processing
 
